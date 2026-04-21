@@ -14,15 +14,15 @@ class PatientFeedback(BaseModel):
         TREATMENT_SATISFACTION = "TREATMENT_SATISFACTION"
         OTHER = "OTHER"
 
-    patient = models.ForeignKey("emr.Patient", on_delete=models.SET_NULL)
+    patient = models.ForeignKey("emr.Patient", null=True,on_delete=models.SET_NULL)
     reference_id = models.UUIDField()
     reference_type = models.CharField(max_length=50, choices=ReferenceType.choices)
-    session = models.OneToOneField(
+    session = models.ForeignKey(
         CommunicationSession, null=True, blank=True, on_delete=models.SET_NULL
     )
     rating = models.PositiveIntegerField(null=True, blank=True)
-    issue_category = models.CharField(max_length=20, choices=IssueCategory.choices)
+    issue_category = models.CharField(max_length=30, choices=IssueCategory.choices)
     comment = models.TextField(blank=True)
 
     class Meta:
-        unique_together = ["patient", "reference_type", "issue_category"]
+        unique_together = ["patient", "reference_type", "reference_id", "issue_category"]
