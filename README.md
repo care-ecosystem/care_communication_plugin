@@ -18,13 +18,13 @@ git clone git@github.com:ohcnetwork/Care Communication.git
 ```python
 ...
 
-Care Communication_plugin = Plug(
-    name=Care Communication, # name of the django app in the plugin
-    package_name="/app/Care Communication", # this has to be /app/ + plugin folder name
+care_communication_plugin = Plug(
+    name="care_communication", # name of the django app in the plugin
+    package_name="/app/care_communication", # this has to be /app/ + plugin folder name
     version="", # keep it empty for local development
     configs={}, # plugin configurations if any
 )
-plugs = [Care Communication_plugin]
+plugs = [care_communication_plugin]
 
 ...
 ```
