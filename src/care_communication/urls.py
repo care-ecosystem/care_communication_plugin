@@ -1,18 +1,11 @@
-from django.conf import settings
-from django.shortcuts import HttpResponse
-from django.urls import path
 from rest_framework.routers import DefaultRouter, SimpleRouter
 
-from care_communication.api.viewsets import BaseViewSet
+from django.conf import settings
 
-
-def healthy(request):
-    return HttpResponse("OK")
-
+from care_communication.api.viewsets.kiosk import KioskViewSet
 
 router = DefaultRouter() if settings.DEBUG else SimpleRouter()
-router.register(r"", BaseViewSet, basename="care_communication-demo")
 
-urlpatterns = [
-    path("health", healthy),
-] + router.urls
+router.register("kiosk", KioskViewSet, basename="kiosk")
+
+urlpatterns = router.urls
