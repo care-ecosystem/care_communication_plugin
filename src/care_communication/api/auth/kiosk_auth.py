@@ -31,7 +31,7 @@ class KioskDOBAuthentication(BaseAuthentication):
         except ValueError:
             raise AuthenticationFailed("Invalid birth year")
 
-        if patient.date_of_birth.year != birth_year:
+        if patient.year_of_birth != birth_year:
             raise AuthenticationFailed("User is not authorized to access patient data")
 
         return (patient, None)
