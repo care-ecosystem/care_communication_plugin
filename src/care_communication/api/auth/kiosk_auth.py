@@ -13,10 +13,10 @@ class KioskDOBAuthentication(BaseAuthentication):
         phone_number = data.get("phone_number")
 
         if not encounter_id:
-            raise AuthenticationFailed("Encounter ID is required.")
+            raise AuthenticationFailed("Encounter ID is required")
 
         if not (birth_year or phone_number):
-            raise AuthenticationFailed("Enter your birth year or phone number.")
+            raise AuthenticationFailed("Either birth year or phone number is required")
 
         try:
             encounter = Encounter.objects.select_related("patient").get(external_id=encounter_id)
@@ -32,9 +32,13 @@ class KioskDOBAuthentication(BaseAuthentication):
             try:
                 birth_year_valid = patient.year_of_birth == int(birth_year)
             except (TypeError, ValueError):
-                raise AuthenticationFailed("Enter a valid birth year.")
+                if not phone_number:
+                    raise AuthenticationFailed("Enter a valid birth year") from None
+                birth_year_valid = False
 
         if phone_number:
+            if not isinstance(phone_number, str):
+                raise AuthenticationFailed("Enter a valid phone number")
             phone_valid = patient.phone_number == phone_number.strip()
 
         if birth_year_valid or phone_valid:
