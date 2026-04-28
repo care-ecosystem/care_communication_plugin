@@ -9,10 +9,16 @@ from care.emr.models import Patient
 
 class KioskDOBAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        patient_id = request.headers.get("X-Patient-UUID")
-        dob = request.headers.get("X-Patient-DOB")
+        method = request.method
 
-        if not patient_id or not dob:
+        if method == "POST":
+            patient_id = request.data.get("patient_id")
+            birth_year = request.data.get("birth_year")
+        else:
+            patient_id = request.query_params.get("patient_id")
+            birth_year = request.query_params.get("birth_year")
+
+        if not patient_id or not birth_year:
             raise AuthenticationFailed("Missing credentials")
 
         try:
@@ -21,11 +27,11 @@ class KioskDOBAuthentication(BaseAuthentication):
             raise AuthenticationFailed("User is not authorized to access patient data")
 
         try:
-            cleaned_dob = datetime.strptime(dob, "%Y-%m-%d").date()
+            birth_year = int(birth_year)
         except ValueError:
-            raise AuthenticationFailed("Invalid date format. Expected YYYY-MM-DD")
+            raise AuthenticationFailed("Invalid birth year")
 
-        if patient.date_of_birth != cleaned_dob:
+        if patient.year_of_birth != birth_year:
             raise AuthenticationFailed("User is not authorized to access patient data")
 
         return (patient, None)
