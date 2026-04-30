@@ -1,37 +1,47 @@
-from datetime import datetime
-import re
-
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from care.emr.models import Patient
+from care.emr.models import Encounter
 
 
 class KioskDOBAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        method = request.method
+        data = request.data if request.method == "POST" else request.query_params
 
-        if method == "POST":
-            patient_id = request.data.get("patient_id")
-            birth_year = request.data.get("birth_year")
-        else:
-            patient_id = request.query_params.get("patient_id")
-            birth_year = request.query_params.get("birth_year")
+        encounter_id = data.get("encounter_id")
+        birth_year = data.get("birth_year")
+        phone_number = data.get("phone_number")
 
-        if not patient_id or not birth_year:
-            raise AuthenticationFailed("Missing credentials")
+        if not encounter_id:
+            raise AuthenticationFailed("Encounter ID is required")
 
-        try:
-            patient = Patient.objects.get(external_id=patient_id)
-        except Patient.DoesNotExist:
-            raise AuthenticationFailed("User is not authorized to access patient data")
+        if not (birth_year or phone_number):
+            raise AuthenticationFailed("Either birth year or phone number is required")
 
         try:
-            birth_year = int(birth_year)
-        except ValueError:
-            raise AuthenticationFailed("Invalid birth year")
+            encounter = Encounter.objects.select_related("patient").get(external_id=encounter_id)
+        except Encounter.DoesNotExist:
+            raise AuthenticationFailed("Invalid encounter ID.")
 
-        if patient.year_of_birth != birth_year:
-            raise AuthenticationFailed("User is not authorized to access patient data")
+        patient = encounter.patient
 
-        return (patient, None)
+        birth_year_valid = False
+        phone_valid = False
+
+        if birth_year:
+            try:
+                birth_year_valid = patient.year_of_birth == int(birth_year)
+            except (TypeError, ValueError):
+                if not phone_number:
+                    raise AuthenticationFailed("Enter a valid birth year") from None
+                birth_year_valid = False
+
+        if phone_number:
+            if not isinstance(phone_number, str):
+                raise AuthenticationFailed("Enter a valid phone number")
+            phone_valid = patient.phone_number == phone_number.strip()
+
+        if birth_year_valid or phone_valid:
+            return (patient, None)
+
+        raise AuthenticationFailed("User credentials do not match")

@@ -12,6 +12,8 @@ class NotificationTemplate(BaseModel):
     name = models.CharField(max_length=255)
     channel = models.CharField(max_length=20, choices=Channel.choices)
 
+    facility = models.ForeignKey("facility.Facility", null=False, on_delete=models.CASCADE)
+
     template_id = models.CharField(max_length=255, blank=True, null=True)
 
     template_body = models.JSONField(null=True, blank=True)
