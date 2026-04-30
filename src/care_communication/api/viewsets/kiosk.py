@@ -77,11 +77,15 @@ class KioskViewSet(GenericViewSet):
         reference_type = request.query_params.get("reference_type")
         event_type = request.query_params.get("event_type")
 
+        encounter = get_object_or_404(Encounter, external_id=encounter_id)
+        facility = encounter.facility
+
         template = NotificationTemplate.objects.filter(
             reference_type=reference_type,
             event_type=event_type,
             channel="KIOSK",
-            active=True
+            active=True,
+            facility=facility
         ).order_by("-version").first()
 
         if not template:

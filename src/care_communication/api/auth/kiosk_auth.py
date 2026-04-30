@@ -44,4 +44,4 @@ class KioskDOBAuthentication(BaseAuthentication):
         if birth_year_valid or phone_valid:
             return (patient, None)
 
-        raise AuthenticationFailed("User is not authorized to access patient data")
+        raise AuthenticationFailed("User credentials do not match")
